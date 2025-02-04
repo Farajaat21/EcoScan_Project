@@ -1,0 +1,10 @@
+
+:root{
+    --landing_paga_background_color: #000000;
+}
+wrapper{
+    background-color: var(--landing_paga_background_color);
+    width:1920wvh;
+    height: 1011vh;
+    background-color:red;
+}

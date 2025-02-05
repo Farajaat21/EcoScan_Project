@@ -1,10 +1,15 @@
 
 :root{
-    --landing_paga_background_color: #000000;
+    --landing_paga_background_color: #ffffff;
 }
-wrapper{
-    background-color: var(--landing_paga_background_color);
+.body {
+    background: #ffffff;
+    position: relative;
+    list-style: none;
+}
+.wrapper{
+    justify-self: center;
     width:1920wvh;
     height: 1011vh;
-    background-color:red;
+    background-color:var(--landing_paga_background_color);
 }

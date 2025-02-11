@@ -4,35 +4,55 @@
     <title>EcoScan</title>
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/resposive.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="wrapper">
-    
-        <div class="nav">
-            <div class="right_side">
-                <h1>🌳EcoLens</h1>
-
+        <nav class="nav">
+            <div class="logo">
+                <a href="#">🌳 Ecolens</a>
             </div>
-            <div class ='left_side'>
-                <h1><a href="">Home</a>></h1>
-                <div class ="login">
-                    login
+            <ul class="nav-main-list">
+                <li>
+                    <div class="nav-item">
+                        <a href="#">Home</a>                    </div>
+                </li>
+                <li class="scan_product">
+                    <div class="nav-item">
+                        <button type="button" class="scan_button">
+                            <a href="#">Scan</a>
+                        </button>
+                    </div>
+                </li>
+                
+                <li>
+                    <div class="nav-item">
+                        <a href="#">Solution</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+        <main>
+            <div class="main-ecolens">
+                <h1>EcoLens</h1>
+
+                <div class="main-ecolens-text">
+                    <p>A fast, simple way to measure your environmental impact based on the products you buy. Scan a product to see its sustainability score and environmental effects.
+                    </p>
                 </div>
             </div>
-
-        
-           
-        </div>
-        <main>
-
+            
         </main>
         <footer>
-
         </footer>
-   
     </div>
-    
-
-    <script src="scripts/app.js"></script>
+    <script src="script/app.js"></script>
 </body>
 </html>

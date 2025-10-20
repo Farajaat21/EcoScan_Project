@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoScan - Product Scanner</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/resposive.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="nav">
+            <div class="logo">
+                <a href="index.html">🌳 EcoScan</a>
+            </div>
+            <ul class="nav-main-list">
+                <li>
+                    <div class="nav-item">
+                        <a href="index.html">Home</a>
+                    </div>
+                </li>
+                <li class="scan_product">
+                    <div class="nav-item">
+                        <button type="button" class="scan_button active">
+                            <a href="scan.html">Scan</a>
+                        </button>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-item">
+                        <a href="#solution">Solution</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+
+        <main class="scan-main">
+            <div class="scan-container">
+                <h1>Scan Product Barcode</h1>
+                <p class="scan-description">
+                    Point your camera at a product barcode to instantly discover its environmental impact and sustainability score.
+                </p>
+                
+                <div class="scanner-section">
+                    <div id="scanner-container">
+                        <div id="scanner" class="scanner">
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame"></div>
+                                <p class="scanner-text">Position barcode within the frame</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scanner-controls">
+                        <button id="start-scan" class="btn btn-primary">Start Camera</button>
+                        <button id="stop-scan" class="btn btn-secondary" disabled>Stop Camera</button>
+                        <button id="manual-input" class="btn btn-outline">Manual Input</button>
+                    </div>
+                </div>
+
+                <div id="manual-input-section" class="manual-input-section" style="display: none;">
+                    <h3>Enter Barcode Manually</h3>
+                    <input type="text" id="barcode-input" placeholder="Enter barcode number" maxlength="13">
+                    <button id="submit-barcode" class="btn btn-primary">Get Eco Score</button>
+                </div>
+
+                <div id="results-section" class="results-section" style="display: none;">
+                    <div class="product-info">
+                        <h2 id="product-title">Product Analysis</h2>
+                        <div class="score-display">
+                            <div class="score-circle">
+                                <span id="eco-score">--</span>
+                                <small>Eco Score</small>
+                            </div>
+                        </div>
+                        <div class="breakdown">
+                            <h3>Environmental Impact Breakdown</h3>
+                            <div class="breakdown-items">
+                                <div class="breakdown-item">
+                                    <span class="label">Carbon Footprint</span>
+                                    <div class="bar">
+                                        <div id="carbon-bar" class="bar-fill"></div>
+                                    </div>
+                                    <span id="carbon-value" class="value">--</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="label">Water Usage</span>
+                                    <div class="bar">
+                                        <div id="water-bar" class="bar-fill"></div>
+                                    </div>
+                                    <span id="water-value" class="value">--</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="label">Other Impact</span>
+                                    <div class="bar">
+                                        <div id="other-bar" class="bar-fill"></div>
+                                    </div>
+                                    <span id="other-value" class="value">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendations">
+                            <h3>Recommendations</h3>
+                            <p id="recommendations-text">Based on the environmental impact analysis, here are some suggestions for more sustainable alternatives.</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="scan-another" class="btn btn-primary">Scan Another Product</button>
+                            <button id="save-result" class="btn btn-outline">Save Result</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing product environmental impact...</p>
+                </div>
+
+                <div id="error-message" class="error-message" style="display: none;">
+                    <p id="error-text"></p>
+                    <button id="retry-scan" class="btn btn-primary">Try Again</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script/app.js"></script>
+    <script>
+        class BarcodeScanner {
+            constructor() {
+                this.isScanning = false;
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.startBtn = document.getElementById('start-scan');
+                this.stopBtn = document.getElementById('stop-scan');
+                this.manualBtn = document.getElementById('manual-input');
+                this.scannerContainer = document.getElementById('scanner-container');
+                this.scanner = document.getElementById('scanner');
+                this.manualInputSection = document.getElementById('manual-input-section');
+                this.resultsSection = document.getElementById('results-section');
+                this.loading = document.getElementById('loading');
+                this.errorMessage = document.getElementById('error-message');
+                this.barcodeInput = document.getElementById('barcode-input');
+                this.submitBarcodeBtn = document.getElementById('submit-barcode');
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.startScanning());
+                this.stopBtn.addEventListener('click', () => this.stopScanning());
+                this.manualBtn.addEventListener('click', () => this.showManualInput());
+                this.submitBarcodeBtn.addEventListener('click', () => this.submitManualBarcode());
+                document.getElementById('scan-another').addEventListener('click', () => this.resetScanner());
+                document.getElementById('retry-scan').addEventListener('click', () => this.resetScanner());
+                document.getElementById('save-result').addEventListener('click', () => this.saveResult());
+            }
+
+            async startScanning() {
+                try {
+                    this.startBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.isScanning = true;
+
+                    await this.initializeCamera();
+                    this.startBtn.textContent = 'Camera Active';
+                } catch (error) {
+                    console.error('Error starting camera:', error);
+                    this.showError('Failed to access camera. Please check permissions and try again.');
+                    this.resetButtons();
+                }
+            }
+
+            stopScanning() {
+                this.isScanning = false;
+                this.resetButtons();
+                
+                if (window.stream) {
+                    window.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                this.scanner.innerHTML = `
+                    <div class="scanner-overlay">
+                        <div class="scanner-frame"></div>
+                        <p class="scanner-text">Position barcode within the frame</p>
+                    </div>
+                `;
+            }
+
+            async initializeCamera() {
+                return new Promise((resolve, reject) => {
+                    navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        } 
+                    })
+                    .then(stream => {
+                        window.stream = stream;
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.style.width = '100%';
+                        video.style.height = '100%';
+                        video.style.objectFit = 'cover';
+                        video.play();
+
+                        this.scanner.innerHTML = '';
+                        this.scanner.appendChild(video);
+                        this.scanner.innerHTML += `
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame"></div>
+                                <p class="scanner-text">Position barcode within the frame</p>
+                            </div>
+                        `;
+
+                        // Initialize Quagga for barcode detection
+                        this.initializeQuagga();
+                        resolve();
+                    })
+                    .catch(reject);
+                });
+            }
+
+            initializeQuagga() {
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: this.scanner,
+                        constraints: {
+                            width: 640,
+                            height: 480,
+                            facingMode: "environment"
+                        },
+                    },
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true
+                    },
+                    numOfWorkers: 2,
+                    frequency: 10,
+                    decoder: {
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader",
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "code_39_vin_reader",
+                            "codabar_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "i2of5_reader"
+                        ]
+                    },
+                    locate: true
+                }, (err) => {
+                    if (err) {
+                        console.error('Quagga initialization error:', err);
+                        return;
+                    }
+                    console.log("Initialization finished. Ready to start");
+                    Quagga.start();
+                });
+
+                Quagga.onDetected((data) => {
+                    if (this.isScanning) {
+                        console.log('Barcode detected:', data.codeResult.code);
+                        this.processBarcode(data.codeResult.code);
+                    }
+                });
+            }
+
+            showManualInput() {
+                this.manualInputSection.style.display = 'block';
+                this.scannerContainer.style.display = 'none';
+            }
+
+            async submitManualBarcode() {
+                const barcode = this.barcodeInput.value.trim();
+                if (!barcode) {
+                    alert('Please enter a barcode');
+                    return;
+                }
+                
+                this.processBarcode(barcode);
+            }
+
+            async processBarcode(barcode) {
+                this.stopScanning();
+                this.showLoading();
+                
+                try {
+                    const response = await fetch(`http://localhost:8000/api/scan?barcode=${encodeURIComponent(barcode)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    this.displayResults(data);
+                } catch (error) {
+                    console.error('Error fetching eco data:', error);
+                    this.showError('Failed to analyze product. Please try again.');
+                }
+            }
+
+            displayResults(data) {
+                this.hideLoading();
+                this.resultsSection.style.display = 'block';
+                
+                const score = data.score;
+                const breakdown = data.breakdown;
+                
+                // Update score display
+                document.getElementById('eco-score').textContent = score;
+                document.getElementById('carbon-value').textContent = breakdown.carbon;
+                document.getElementById('water-value').textContent = breakdown.water;
+                document.getElementById('other-value').textContent = breakdown.other;
+                
+                // Update progress bars
+                this.updateProgressBar('carbon-bar', breakdown.carbon, 50);
+                this.updateProgressBar('water-bar', breakdown.water, 30);
+                this.updateProgressBar('other-bar', breakdown.other, 20);
+                
+                // Update score circle color
+                const scoreCircle = document.querySelector('.score-circle');
+                if (score >= 80) {
+                    scoreCircle.style.borderColor = '#10b981'; // Green
+                } else if (score >= 60) {
+                    scoreCircle.style.borderColor = '#f59e0b'; // Yellow
+                } else {
+                    scoreCircle.style.borderColor = '#ef4444'; // Red
+                }
+                
+                // Update recommendations
+                this.updateRecommendations(score, breakdown);
+            }
+
+            updateProgressBar(barId, value, max) {
+                const bar = document.getElementById(barId);
+                const percentage = (value / max) * 100;
+                bar.style.width = `${Math.min(percentage, 100)}%`;
+                
+                // Color coding
+                if (percentage <= 30) {
+                    bar.style.backgroundColor = '#10b981'; // Green
+                } else if (percentage <= 70) {
+                    bar.style.backgroundColor = '#f59e0b'; // Yellow
+                } else {
+                    bar.style.backgroundColor = '#ef4444'; // Red
+                }
+            }
+
+            updateRecommendations(score, breakdown) {
+                const recommendations = document.getElementById('recommendations-text');
+                let text = '';
+                
+                if (score >= 80) {
+                    text = 'Excellent! This product has a low environmental impact. Keep choosing products like this!';
+                } else if (score >= 60) {
+                    text = 'Good choice! This product has moderate environmental impact. Consider looking for alternatives with lower carbon footprint.';
+                } else {
+                    text = 'This product has a high environmental impact. Consider looking for more sustainable alternatives with lower carbon footprint and water usage.';
+                }
+                
+                recommendations.textContent = text;
+            }
+
+            showLoading() {
+                this.loading.style.display = 'block';
+                this.resultsSection.style.display = 'none';
+                this.errorMessage.style.display = 'none';
+            }
+
+            hideLoading() {
+                this.loading.style.display = 'none';
+            }
+
+            showError(message) {
+                this.hideLoading();
+                document.getElementById('error-text').textContent = message;
+                this.errorMessage.style.display = 'block';
+                this.resultsSection.style.display = 'none';
+            }
+
+            resetScanner() {
+                this.stopScanning();
+                this.resultsSection.style.display = 'none';
+                this.errorMessage.style.display = 'none';
+                this.manualInputSection.style.display = 'none';
+                this.scannerContainer.style.display = 'block';
+                this.barcodeInput.value = '';
+            }
+
+            resetButtons() {
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.startBtn.textContent = 'Start Camera';
+            }
+
+            saveResult() {
+                // In a real app, this would save to local storage or send to backend
+                alert('Result saved! (Feature coming soon)');
+            }
+        }
+
+        // Initialize scanner when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BarcodeScanner();
+        });
+    </script>
+</body>
+</html>

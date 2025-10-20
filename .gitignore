@@ -1,0 +1,17 @@
+# Git ignore file for EcoScan_Project
+
+# Ignore 'mh' virtual environment directory name variants
+mh_env/
+mh-env/
+mh env/
+mhenv/
+
+# Common Python/Node ignores (helpful but optional)
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+node_modules/
+frontend/dist/
+frontend/node_modules/

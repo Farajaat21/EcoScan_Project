@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoScan - Product Search</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/resposive.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="nav">
+            <div class="logo">
+                <a href="index.html">🌳 EcoScan</a>
+            </div>
+            <ul class="nav-main-list">
+                <li>
+                    <div class="nav-item">
+                        <a href="index.html">Home</a>
+                    </div>
+                </li>
+                <li class="scan_product">
+                    <div class="nav-item">
+                        <button type="button" class="scan_button">
+                            <a href="scan.html">Scan</a>
+                        </button>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-item">
+                        <a href="solution.html">Solution</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="nav-item">
+                        <a href="search.html" class="active">Search</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+
+        <main class="search-main">
+            <div class="search-container">
+                <header class="search-header">
+                    <h1>Search Any Product</h1>
+                    <p class="search-subtitle">
+                        Find environmental impact data for millions of products from around the world
+                    </p>
+                </header>
+
+                <div class="search-section">
+                    <div class="search-box-container">
+                        <div class="search-box">
+                            <input type="text" id="product-search" placeholder="Search for any product (e.g., 'iPhone 15', 'Coca Cola', 'Nike shoes')" autocomplete="off">
+                            <button id="search-button" class="search-btn">
+                                <span class="search-icon">🔍</span>
+                                Search
+                            </button>
+                        </div>
+                        <div class="search-suggestions" id="search-suggestions"></div>
+                    </div>
+
+                    <div class="search-filters">
+                        <div class="filter-group">
+                            <label for="category-filter">Category:</label>
+                            <select id="category-filter">
+                                <option value="">All Categories</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="food">Food & Beverages</option>
+                                <option value="clothing">Clothing & Fashion</option>
+                                <option value="beauty">Beauty & Personal Care</option>
+                                <option value="home">Home & Garden</option>
+                                <option value="automotive">Automotive</option>
+                                <option value="books">Books & Media</option>
+                                <option value="sports">Sports & Outdoors</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="brand-filter">Brand:</label>
+                            <select id="brand-filter">
+                                <option value="">All Brands</option>
+                                <option value="apple">Apple</option>
+                                <option value="samsung">Samsung</option>
+                                <option value="nike">Nike</option>
+                                <option value="coca-cola">Coca Cola</option>
+                                <option value="nike">Nike</option>
+                                <option value="adidas">Adidas</option>
+                                <option value="tesla">Tesla</option>
+                                <option value="amazon">Amazon</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sustainability-filter">Sustainability:</label>
+                            <select id="sustainability-filter">
+                                <option value="">Any Rating</option>
+                                <option value="excellent">Excellent (80-100)</option>
+                                <option value="good">Good (60-79)</option>
+                                <option value="fair">Fair (40-59)</option>
+                                <option value="poor">Poor (0-39)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-results" id="search-results">
+                    <div class="no-search-state">
+                        <div class="no-search-icon">🔍</div>
+                        <h3>Search for Products</h3>
+                        <p>Enter a product name, brand, or category to find environmental impact data</p>
+                        <div class="popular-searches">
+                            <h4>Popular Searches:</h4>
+                            <div class="popular-tags">
+                                <span class="search-tag" data-query="iPhone 15">iPhone 15</span>
+                                <span class="search-tag" data-query="Tesla Model 3">Tesla Model 3</span>
+                                <span class="search-tag" data-query="Nike Air Max">Nike Air Max</span>
+                                <span class="search-tag" data-query="Coca Cola">Coca Cola</span>
+                                <span class="search-tag" data-query="Samsung Galaxy">Samsung Galaxy</span>
+                                <span class="search-tag" data-query="MacBook Pro">MacBook Pro</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loading" id="search-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Searching products...</p>
+                </div>
+
+                <div class="error-message" id="search-error" style="display: none;">
+                    <p id="search-error-text"></p>
+                    <button id="retry-search" class="btn btn-primary">Try Again</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        class ProductSearch {
+            constructor() {
+                this.searchInput = document.getElementById('product-search');
+                this.searchButton = document.getElementById('search-button');
+                this.searchResults = document.getElementById('search-results');
+                this.searchLoading = document.getElementById('search-loading');
+                this.searchError = document.getElementById('search-error');
+                this.searchSuggestions = document.getElementById('search-suggestions');
+                
+                this.bindEvents();
+                this.initializeSearch();
+            }
+
+            bindEvents() {
+                this.searchButton.addEventListener('click', () => this.performSearch());
+                this.searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch();
+                    }
+                });
+                this.searchInput.addEventListener('input', () => this.handleInput());
+                document.getElementById('retry-search').addEventListener('click', () => this.performSearch());
+                
+                // Popular search tags
+                document.querySelectorAll('.search-tag').forEach(tag => {
+                    tag.addEventListener('click', () => {
+                        this.searchInput.value = tag.dataset.query;
+                        this.performSearch();
+                    });
+                });
+
+                // Filter changes
+                document.getElementById('category-filter').addEventListener('change', () => this.performSearch());
+                document.getElementById('brand-filter').addEventListener('change', () => this.performSearch());
+                document.getElementById('sustainability-filter').addEventListener('change', () => this.performSearch());
+            }
+
+            initializeSearch() {
+                // Load trending products on page load
+                this.loadTrendingProducts();
+            }
+
+            async handleInput() {
+                const query = this.searchInput.value.trim();
+                if (query.length > 2) {
+                    await this.getSuggestions(query);
+                } else {
+                    this.searchSuggestions.innerHTML = '';
+                }
+            }
+
+            async getSuggestions(query) {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/suggestions?q=${encodeURIComponent(query)}`);
+                    if (response.ok) {
+                        const suggestions = await response.json();
+                        this.displaySuggestions(suggestions);
+                    }
+                } catch (error) {
+                    console.error('Error getting suggestions:', error);
+                }
+            }
+
+            displaySuggestions(suggestions) {
+                if (suggestions.length === 0) {
+                    this.searchSuggestions.innerHTML = '';
+                    return;
+                }
+
+                const suggestionsHtml = suggestions.map(item => `
+                    <div class="suggestion-item" data-query="${item.name}">
+                        <div class="suggestion-name">${item.name}</div>
+                        <div class="suggestion-brand">${item.brand || ''}</div>
+                    </div>
+                `).join('');
+
+                this.searchSuggestions.innerHTML = `
+                    <div class="suggestions-container">
+                        ${suggestionsHtml}
+                    </div>
+                `;
+
+                // Add click events to suggestions
+                this.searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.searchInput.value = item.dataset.query;
+                        this.searchSuggestions.innerHTML = '';
+                        this.performSearch();
+                    });
+                });
+            }
+
+            async performSearch() {
+                const query = this.searchInput.value.trim();
+                if (!query) {
+                    this.showNoSearchState();
+                    return;
+                }
+
+                this.showLoading();
+                this.searchSuggestions.innerHTML = '';
+
+                try {
+                    const filters = this.getFilters();
+                    const results = await this.searchProducts(query, filters);
+                    this.displayResults(results);
+                } catch (error) {
+                    console.error('Search error:', error);
+                    this.showError('Failed to search products. Please try again.');
+                }
+            }
+
+            getFilters() {
+                return {
+                    category: document.getElementById('category-filter').value,
+                    brand: document.getElementById('brand-filter').value,
+                    sustainability: document.getElementById('sustainability-filter').value
+                };
+            }
+
+            async searchProducts(query, filters) {
+                const params = new URLSearchParams({
+                    q: query,
+                    ...filters
+                });
+
+                const response = await fetch(`http://localhost:8000/api/search?${params}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            }
+
+            displayResults(results) {
+                this.hideLoading();
+                
+                if (results.length === 0) {
+                    this.showNoResults();
+                    return;
+                }
+
+                const resultsHtml = results.map(product => this.createProductCard(product)).join('');
+                this.searchResults.innerHTML = `
+                    <div class="results-header">
+                        <h3>Found ${results.length} product${results.length !== 1 ? 's' : ''}</h3>
+                        <div class="results-actions">
+                            <button class="btn btn-outline" onclick="this.closest('.search-container').querySelector('#product-search').value=''; this.closest('.search-container').querySelector('.search-results').innerHTML=document.querySelector('.no-search-state').outerHTML;">Clear Search</button>
+                        </div>
+                    </div>
+                    <div class="products-grid">
+                        ${resultsHtml}
+                    </div>
+                `;
+            }
+
+            createProductCard(product) {
+                const scoreColor = this.getScoreColor(product.score);
+                const scoreText = this.getScoreText(product.score);
+                
+                return `
+                    <div class="product-card" data-product-id="${product.id}">
+                        <div class="product-image">
+                            <img src="${product.image || 'https://via.placeholder.com/200x200?text=Product'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Product'">
+                            <div class="product-score-badge ${scoreColor}">
+                                ${product.score}
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-brand">${product.brand}</p>
+                            <p class="product-category">${product.category}</p>
+                            <div class="product-score">
+                                <div class="score-circle ${scoreColor}">
+                                    <span class="score-number">${product.score}</span>
+                                    <small>Eco Score</small>
+                                </div>
+                                <div class="score-details">
+                                    <p class="score-text">${scoreText}</p>
+                                    <div class="impact-breakdown">
+                                        <span class="impact-item">Carbon: ${product.breakdown.carbon}</span>
+                                        <span class="impact-item">Water: ${product.breakdown.water}</span>
+                                        <span class="impact-item">Other: ${product.breakdown.other}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary" onclick="window.location.href='scan.html?product=${encodeURIComponent(product.name)}'">View Details</button>
+                                <button class="btn btn-outline" onclick="this.closest('.product-card').querySelector('.product-alternatives').style.display='block'">Find Alternatives</button>
+                            </div>
+                            <div class="product-alternatives" style="display: none;">
+                                <h4>Better Alternatives:</h4>
+                                <div class="alternatives-list">
+                                    ${product.alternatives ? product.alternatives.map(alt => `
+                                        <div class="alternative-item">
+                                            <span class="alt-name">${alt.name}</span>
+                                            <span class="alt-score">${alt.score}</span>
+                                        </div>
+                                    `).join('') : '<p>No alternatives found</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getScoreColor(score) {
+                if (score >= 80) return 'excellent';
+                if (score >= 60) return 'good';
+                if (score >= 40) return 'fair';
+                return 'poor';
+            }
+
+            getScoreText(score) {
+                if (score >= 80) return 'Excellent sustainability';
+                if (score >= 60) return 'Good sustainability';
+                if (score >= 40) return 'Fair sustainability';
+                return 'Poor sustainability';
+            }
+
+            showLoading() {
+                this.searchLoading.style.display = 'block';
+                this.searchResults.innerHTML = '';
+                this.searchError.style.display = 'none';
+            }
+
+            hideLoading() {
+                this.searchLoading.style.display = 'none';
+            }
+
+            showError(message) {
+                this.hideLoading();
+                document.getElementById('search-error-text').textContent = message;
+                this.searchError.style.display = 'block';
+                this.searchResults.innerHTML = '';
+            }
+
+            showNoSearchState() {
+                this.searchResults.innerHTML = `
+                    <div class="no-search-state">
+                        <div class="no-search-icon">🔍</div>
+                        <h3>Search for Products</h3>
+                        <p>Enter a product name, brand, or category to find environmental impact data</p>
+                        <div class="popular-searches">
+                            <h4>Popular Searches:</h4>
+                            <div class="popular-tags">
+                                <span class="search-tag" data-query="iPhone 15">iPhone 15</span>
+                                <span class="search-tag" data-query="Tesla Model 3">Tesla Model 3</span>
+                                <span class="search-tag" data-query="Nike Air Max">Nike Air Max</span>
+                                <span class="search-tag" data-query="Coca Cola">Coca Cola</span>
+                                <span class="search-tag" data-query="Samsung Galaxy">Samsung Galaxy</span>
+                                <span class="search-tag" data-query="MacBook Pro">MacBook Pro</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Re-bind popular tag events
+                document.querySelectorAll('.search-tag').forEach(tag => {
+                    tag.addEventListener('click', () => {
+                        this.searchInput.value = tag.dataset.query;
+                        this.performSearch();
+                    });
+                });
+            }
+
+            showNoResults() {
+                this.searchResults.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your search terms or filters</p>
+                        <button class="btn btn-primary" onclick="this.closest('.search-container').querySelector('#product-search').value=''; new ProductSearch().showNoSearchState();">Clear Search</button>
+                    </div>
+                `;
+            }
+
+            async loadTrendingProducts() {
+                // This would load trending products in a real implementation
+                // For now, we'll show the default no-search state
+            }
+        }
+
+        // Initialize search when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProductSearch();
+        });
+    </script>
+</body>
+</html>
